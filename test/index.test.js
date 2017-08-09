@@ -89,6 +89,10 @@ describe('index test', () => {
         mockery.deregisterAll();
     });
 
+    after(() => {
+        mockery.disable();
+    });
+
     describe('construction', () => {
         let exampleOptions;
         let k8sOptions;
