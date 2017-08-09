@@ -10,7 +10,7 @@ class ExecutorRouter extends Executor {
      * @param  {Object}         config                      Object with executor and ecosystem
      * @param  {String}         [config.defaultPlugin]      Optional default executor
      * @param  {Object}         [config.ecosystem]          Optional object with ecosystem values
-     * @param  {Array|Object}   config.executor             Array of executors to load or a single executor object
+     * @param  {Array}   config.executor                    Array of executors to load
      * @param  {String}         config.executor[x].name     Name of the executor NPM module to load
      * @param  {String}         config.executor[x].options  Configuration to construct the module with
      */
