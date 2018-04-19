@@ -10,7 +10,7 @@ class ExecutorRouter extends Executor {
      * @param  {Object}         config                      Object with executor and ecosystem
      * @param  {String}         [config.defaultPlugin]      Optional default executor
      * @param  {Object}         [config.ecosystem]          Optional object with ecosystem values
-     * @param  {Array}   config.executor                    Array of executors to load
+     * @param  {Array}          config.executor             Array of executors to load
      * @param  {String}         config.executor[x].name     Name of the executor NPM module to load
      * @param  {String}         config.executor[x].options  Configuration to construct the module with
      */
@@ -59,12 +59,12 @@ class ExecutorRouter extends Executor {
     /**
      * Starts a new build in an executor
      * @method _start
-     * @param {Object} config               Configuration
-     * @param {Object} [config.annotations] Optional key/value object
-     * @param {String} config.apiUri        Screwdriver's API
-     * @param {String} config.buildId       Unique ID for a build
-     * @param {String} config.container     Container for the build to run in
-     * @param {String} config.token         JWT to act on behalf of the build
+     * @param  {Object} config               Configuration
+     * @param  {Object} [config.annotations] Optional key/value object
+     * @param  {String} config.apiUri        Screwdriver's API
+     * @param  {String} config.buildId       Unique ID for a build
+     * @param  {String} config.container     Container for the build to run in
+     * @param  {String} config.token         JWT to act on behalf of the build
      * @return {Promise}
      */
     _start(config) {
@@ -78,9 +78,9 @@ class ExecutorRouter extends Executor {
     /**
      * Stop a running or finished build
      * @method _stop
-     * @param {Object} config               Configuration
-     * @param {Object} [config.annotations] Optional key/value object
-     * @param {String} config.buildId       Unique ID for a build
+     * @param  {Object} config               Configuration
+     * @param  {Object} [config.annotations] Optional key/value object
+     * @param  {String} config.buildId       Unique ID for a build
      * @return {Promise}
      */
     _stop(config) {
