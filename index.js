@@ -90,6 +90,36 @@ class ExecutorRouter extends Executor {
 
         return executor.stop(config);
     }
+
+    /**
+     * Starts a periodic job in an executor
+     * @method _startPeriodic
+     * @param  {Object} config               Configuration
+     * @param  {Object} [config.annotations] Optional key/value object
+     * @return {Promise}
+     */
+    _startPeriodic(config) {
+        const annotations = config.annotations || {};
+        const executorType = annotations[ANNOTATION_EXECUTOR_TYPE];
+        const executor = this[executorType] || this.defaultExecutor; // Route to executor (based on annotations) or use default executor
+
+        return executor.startPeriodic(config);
+    }
+
+    /**
+     * Stop a periodic job
+     * @method _stopPeriodic
+     * @param  {Object} config               Configuration
+     * @param  {Object} [config.annotations] Optional key/value object
+     * @return {Promise}
+     */
+    _stopPeriodic(config) {
+        const annotations = config.annotations || {};
+        const executorType = annotations[ANNOTATION_EXECUTOR_TYPE];
+        const executor = this[executorType] || this.defaultExecutor; // Route to executor (based on annotations) or use default executor
+
+        return executor.stopPeriodic(config);
+    }
 }
 
 module.exports = ExecutorRouter;

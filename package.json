@@ -40,7 +40,7 @@
     "sinon": "^2.3.4"
   },
   "dependencies": {
-    "screwdriver-executor-base": "^5.2.2"
+    "screwdriver-executor-base": "^6.1.0"
   },
   "release": {
     "debug": false,

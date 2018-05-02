@@ -60,7 +60,9 @@ describe('index test', () => {
         };
         exampleExecutorMock = {
             _start: sinon.stub(),
-            _stop: sinon.stub()
+            _stop: sinon.stub(),
+            _startPeriodic: sinon.stub(),
+            _stopPeriodic: sinon.stub()
         };
 
         mockery.registerMock('fs', fsMock);
@@ -442,6 +444,56 @@ describe('index test', () => {
                 buildId: 920
             }).then(assert.fail, (err) => {
                 assert.deepEqual(err, testError);
+            });
+        });
+    });
+
+    describe('_stopPeriodic', () => {
+        it('call stop periodic for that executor', () => {
+            executor = new Executor({
+                defaultPlugin: 'example',
+                ecosystem,
+                executor: [
+                    {
+                        name: 'k8s',
+                        options: k8sPluginOptions
+                    },
+                    {
+                        name: 'example',
+                        options: examplePluginOptions
+                    }
+                ]
+            });
+            exampleExecutorMock._stopPeriodic.resolves('exampleExecutorMockResult');
+
+            return executor.stopPeriodic({
+                jobId: 920
+            }).then((result) => {
+                assert.strictEqual(result, 'exampleExecutorMockResult');
+            });
+        });
+    });
+
+    describe('_startPeriodic', () => {
+        it('call start periodic for that executor', () => {
+            executor = new Executor({
+                defaultPlugin: 'example',
+                ecosystem,
+                executor: [
+                    {
+                        name: 'k8s',
+                        options: k8sPluginOptions
+                    },
+                    {
+                        name: 'example',
+                        options: examplePluginOptions
+                    }
+                ]
+            });
+            exampleExecutorMock._startPeriodic.resolves('exampleExecutorMockResult');
+
+            return executor.startPeriodic({}).then((result) => {
+                assert.strictEqual(result, 'exampleExecutorMockResult');
             });
         });
     });
