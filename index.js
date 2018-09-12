@@ -1,6 +1,6 @@
 'use strict';
 
-const ANNOTATION_EXECUTOR_TYPE = 'beta.screwdriver.cd/executor'; // Key in annotations object that maps to an executor NPM module
+const ANNOTATION_EXECUTOR_TYPE = 'executor'; // Key in annotations object that maps to an executor NPM module
 const Executor = require('screwdriver-executor-base');
 
 class ExecutorRouter extends Executor {
@@ -68,7 +68,7 @@ class ExecutorRouter extends Executor {
      * @return {Promise}
      */
     _start(config) {
-        const annotations = config.annotations || {};
+        const annotations = this.parseAnnotations(config.annotations || {});
         const executorType = annotations[ANNOTATION_EXECUTOR_TYPE];
         const executor = this[executorType] || this.defaultExecutor; // Route to executor (based on annotations) or use default executor
 
@@ -84,7 +84,7 @@ class ExecutorRouter extends Executor {
      * @return {Promise}
      */
     _stop(config) {
-        const annotations = config.annotations || {};
+        const annotations = this.parseAnnotations(config.annotations || {});
         const executorType = annotations[ANNOTATION_EXECUTOR_TYPE];
         const executor = this[executorType] || this.defaultExecutor; // Route to executor (based on annotations) or use default executor
 
