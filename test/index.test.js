@@ -136,35 +136,19 @@ describe('index test', () => {
         });
 
         it('defaults to an empty object when config does not exist', () => {
-            const error = new Error('No executor config passed in.');
-
-            try {
+            assert.throws(() => {
                 executor = new Executor();
-            } catch (err) {
-                assert.deepEqual(err, error);
-
-                return;
-            }
-            assert.fail();
+            }, Error, 'No executor config passed in.');
         });
 
         it('throws an error when the executor config does not exist', () => {
-            const error = new Error('No executor config passed in.');
-
-            try {
+            assert.throws(() => {
                 executor = new Executor({ ecosystem });
-            } catch (err) {
-                assert.deepEqual(err, error);
-
-                return;
-            }
-            assert.fail();
+            }, Error, 'No executor config passed in.');
         });
 
         it('throws an error when the executor config is not an array', () => {
-            const error = new Error('No executor config passed in.');
-
-            try {
+            assert.throws(() => {
                 executor = new Executor({
                     ecosystem,
                     executor: {
@@ -172,34 +156,20 @@ describe('index test', () => {
                         options: k8sPluginOptions
                     }
                 });
-            } catch (err) {
-                assert.deepEqual(err, error);
-
-                return;
-            }
-            assert.fail();
+            }, Error, 'No executor config passed in.');
         });
 
         it('throws an error when the executor config is an empty array', () => {
-            const error = new Error('No executor config passed in.');
-
-            try {
+            assert.throws(() => {
                 executor = new Executor({
                     ecosystem,
                     executor: []
                 });
-            } catch (err) {
-                assert.deepEqual(err, error);
-
-                return;
-            }
-            assert.fail();
+            }, Error, 'No executor config passed in.');
         });
 
         it('throws an error when no default executor is set', () => {
-            const error = new Error('No default executor set.');
-
-            try {
+            assert.throws(() => {
                 executor = new Executor({
                     ecosystem,
                     executor: [{
@@ -210,16 +180,11 @@ describe('index test', () => {
                         options: k8sPluginOptions
                     }]
                 });
-            } catch (err) {
-                assert.strictEqual(err.message, error.message);
-
-                return;
-            }
-            assert.fail();
+            }, Error, 'No default executor set.');
         });
 
         it('does not throw an error when a npm module cannot be registered', () => {
-            try {
+            assert.doesNotThrow(() => {
                 executor = new Executor({
                     ecosystem,
                     executor: [{
@@ -230,9 +195,7 @@ describe('index test', () => {
                         options: k8sPluginOptions
                     }]
                 });
-            } catch (err) {
-                assert.fail(err, '');
-            }
+            });
         });
 
         it('registers multiple plugins', () => {
