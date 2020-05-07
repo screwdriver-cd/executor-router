@@ -44,10 +44,10 @@ class ExecutorRouter extends Executor {
         });
 
         // executor rules chain
+        // order-> annotated > weighted > default
         this._executorRules = [
             {
                 name: 'annotated',
-                priority: 1,
                 check: buildConfig => {
                     const annotations = this.parseAnnotations(buildConfig.annotations || {});
 
@@ -56,17 +56,13 @@ class ExecutorRouter extends Executor {
             },
             {
                 name: 'weighted',
-                priority: 2,
                 check: () => this.getWeightedExecutor(this._executors)
             },
             {
                 name: 'default',
-                priority: 3,
                 check: () => defaultPlugin || (this._executors[0] && this._executors[0].name)
             }
         ];
-        // sort by priority and store
-        this._executorRules.sort((a, b) => a.priority - b.priority);
 
         if (!this._executorRules.find(a => a.name === 'default').check()) {
             throw new Error('No default executor set.');
@@ -99,7 +95,7 @@ class ExecutorRouter extends Executor {
 
     /**
      * Evaluates the executor rules by priority and returns the first matching executor
-     * @method evaluateRules
+     * @method getExecutor
      * @param  {Object} config               Configuration
      * @param  {Object} [config.annotations] Optional key/value object
      * @param  {String} config.apiUri        Screwdriver's API
@@ -109,7 +105,7 @@ class ExecutorRouter extends Executor {
      * @param  {String} config.token         JWT to act on behalf of the build
      * @return {Object} executor object
      */
-    evaluateRules(config) {
+    getExecutor(config) {
         let executorName;
 
         for (const rule of this._executorRules) {
@@ -135,7 +131,7 @@ class ExecutorRouter extends Executor {
      * @return {Promise}
      */
     _start(config) {
-        const executor = this.evaluateRules(config);
+        const executor = this.getExecutor(config);
 
         return executor.start(config);
     }
@@ -149,7 +145,7 @@ class ExecutorRouter extends Executor {
      * @return {Promise}
      */
     _stop(config) {
-        const executor = this.evaluateRules(config);
+        const executor = this.getExecutor(config);
 
         return executor.stop(config);
     }
