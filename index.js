@@ -16,44 +16,106 @@ class ExecutorRouter extends Executor {
      */
     constructor(config = {}) {
         const ecosystem = config.ecosystem || {};
-        const executorConfig = config.executor;
-        const defaultPlugin = config.defaultPlugin;
+        const { executor, defaultPlugin } = config;
 
-        if (!executorConfig || !(Array.isArray(executorConfig)) || executorConfig.length === 0) {
+        if (!executor || !Array.isArray(executor) || executor.length === 0) {
             throw new Error('No executor config passed in.');
         }
-
         super();
 
-        executorConfig.forEach((plugin) => {
-            let ExecutorPlugin;
+        let ExecutorPlugin;
 
+        this._executors = [];
+
+        executor.forEach(plugin => {
             try {
                 // eslint-disable-next-line global-require, import/no-dynamic-require
                 ExecutorPlugin = require(`screwdriver-executor-${plugin.name}`);
+                this._executors.push(plugin);
             } catch (err) {
-                console.error(err);
+                console.error(err.message);
 
                 return;
             }
+            // Add ecosystem to executor options
+            const options = Object.assign({ ecosystem }, plugin.options);
 
-            const options = Object.assign({ ecosystem }, plugin.options); // Add ecosystem to executor options
-            const executorPlugin = new ExecutorPlugin(options);
-
-            if (defaultPlugin && defaultPlugin === plugin.name) {
-                // set the default plugin to the desired one
-                this.defaultExecutor = executorPlugin;
-            } else if (!defaultPlugin && !this.defaultExecutor) {
-                // When given no default plugin, use the first module we instantiated
-                this.defaultExecutor = executorPlugin;
-            }
-
-            this[plugin.name] = executorPlugin;
+            this[plugin.name] = new ExecutorPlugin(options);
         });
 
-        if (!this.defaultExecutor) {
+        // executor rules chain
+        // order-> annotated > weighted > default
+        this._executorRules = [
+            {
+                name: 'annotated',
+                check: buildConfig => {
+                    const annotations = this.parseAnnotations(buildConfig.annotations || {});
+
+                    return annotations[ANNOTATION_EXECUTOR_TYPE];
+                }
+            },
+            {
+                name: 'weighted',
+                check: () => this.getWeightedExecutor(this._executors)
+            },
+            {
+                name: 'default',
+                check: () => defaultPlugin || (this._executors[0] && this._executors[0].name)
+            }
+        ];
+
+        if (!this._executorRules.find(a => a.name === 'default').check()) {
             throw new Error('No default executor set.');
         }
+    }
+
+    /**
+     * Returns the executor based on a random selection optimized on weightage
+     * @param {Array} executors
+     * @return {String} executor name
+     */
+    getWeightedExecutor(executors) {
+        const totalWeight = executors.reduce((prev, curr) => prev + (curr.weightage || 0), 0);
+
+        if (totalWeight === 0) {
+            return undefined;
+        }
+        const number = Math.floor(Math.random() * totalWeight);
+
+        let sum = 0;
+
+        for (let i = 0; i < executors.length; i += 1) {
+            sum += executors[i].weightage;
+
+            if (number < sum) return executors[i].name;
+        }
+
+        return executors[0].name;
+    }
+
+    /**
+     * Evaluates the executor rules by priority and returns the first matching executor
+     * @method getExecutor
+     * @param  {Object} config               Configuration
+     * @param  {Object} [config.annotations] Optional key/value object
+     * @param  {String} config.apiUri        Screwdriver's API
+     * @param  {Object} [config.build]       Build object
+     * @param  {String} config.buildId       Unique ID for a build
+     * @param  {String} config.container     Container for the build to run in
+     * @param  {String} config.token         JWT to act on behalf of the build
+     * @return {Object} executor object
+     */
+    getExecutor(config) {
+        let executorName;
+
+        for (const rule of this._executorRules) {
+            executorName = rule.check(config);
+            if (executorName && this[executorName]) {
+                break;
+            }
+        }
+
+        return this[executorName];
     }
 
     /**
@@ -69,9 +131,7 @@ class ExecutorRouter extends Executor {
      * @return {Promise}
      */
     _start(config) {
-        const annotations = this.parseAnnotations(config.annotations || {});
-        const executorType = annotations[ANNOTATION_EXECUTOR_TYPE];
-        const executor = this[executorType] || this.defaultExecutor; // Route to executor (based on annotations) or use default executor
+        const executor = this.getExecutor(config);
 
         return executor.start(config);
     }
@@ -85,9 +145,7 @@ class ExecutorRouter extends Executor {
      * @return {Promise}
      */
     _stop(config) {
-        const annotations = this.parseAnnotations(config.annotations || {});
-        const executorType = annotations[ANNOTATION_EXECUTOR_TYPE];
-        const executor = this[executorType] || this.defaultExecutor; // Route to executor (based on annotations) or use default executor
+        const executor = this.getExecutor(config);
 
         return executor.stop(config);
     }
