@@ -75,7 +75,7 @@ class ExecutorRouter extends Executor {
      * @return {String} executor name
      */
     getWeightedExecutor(executors) {
-        const totalWeight = executors.reduce((prev, curr) => prev + (curr.weightage || 0), 0);
+        const totalWeight = executors.reduce((prev, curr) => prev + (+curr.weightage || 0), 0);
 
         if (totalWeight === 0) {
             return undefined;
@@ -85,7 +85,7 @@ class ExecutorRouter extends Executor {
         let sum = 0;
 
         for (let i = 0; i < executors.length; i += 1) {
-            sum += executors[i].weightage;
+            sum += parseInt(executors[i].weightage, 10) || 0;
 
             if (number < sum) return executors[i].name;
         }
