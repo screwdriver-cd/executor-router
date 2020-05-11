@@ -622,5 +622,41 @@ describe('index test', () => {
                     assert.deepEqual(err, testError);
                 });
         });
+
+        it('selects correct executor when weightage is type string', () => {
+            executor = new Executor({
+                ecosystem,
+                defaultPlugin: 'example',
+                executor: [
+                    {
+                        name: 'k8s',
+                        weightage: '0',
+                        options: k8sPluginOptions
+                    },
+                    {
+                        name: 'example',
+                        weightage: '0',
+                        options: examplePluginOptions
+                    },
+                    {
+                        name: 'k8s-vm',
+                        weightage: '5',
+                        options: k8sVmPluginOptions
+                    }
+                ]
+            });
+            k8sVmExecutorMock._stop.resolves('k8sVmExecutorResult');
+
+            return executor
+                ._stop({
+                    buildId: 920
+                })
+                .then(result => {
+                    assert.strictEqual(result, 'k8sVmExecutorResult');
+                    assert.calledOnce(k8sVmExecutorMock._stop);
+                    assert.notCalled(exampleExecutorMock._stop);
+                    assert.notCalled(k8sExecutorMock._stop);
+                });
+        });
     });
 });
