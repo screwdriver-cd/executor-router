@@ -658,5 +658,91 @@ describe('index test', () => {
                     assert.notCalled(k8sExecutorMock._stop);
                 });
         });
+
+        it('does not use the weighted executor which has the container in exclusion', () => {
+            executor = new Executor({
+                ecosystem,
+                defaultPlugin: 'example',
+                executor: [
+                    {
+                        name: 'k8s',
+                        exclusions: ['rhel6', 'ylinux6'],
+                        weightage: '10',
+                        options: k8sPluginOptions
+                    },
+                    {
+                        name: 'example',
+                        weightage: '0',
+                        options: examplePluginOptions
+                    },
+                    {
+                        name: 'k8s-vm',
+                        weightage: '2',
+                        options: k8sVmPluginOptions
+                    }
+                ]
+            });
+
+            k8sVmExecutorMock._start.resolves('k8sVmExecutorResult');
+            exampleExecutorMock._start.resolves('exampleExecutorResult');
+            k8sExecutorMock._start.resolves('k8sExecutorResult');
+
+            return executor
+                .start({
+                    buildId: 920,
+                    container: 'docker-registry.example.com:4443/sd/arya-rhel6:latest',
+                    apiUri: 'http://api.com',
+                    token: 'qwer'
+                })
+                .then(result => {
+                    assert.strictEqual(result, 'k8sVmExecutorResult');
+                    assert.calledOnce(k8sVmExecutorMock._start);
+                    assert.notCalled(exampleExecutorMock._start);
+                    assert.notCalled(k8sExecutorMock._start);
+                });
+        });
+
+        it('uses the correct weighted executor when container not matched in execlusion', () => {
+            executor = new Executor({
+                ecosystem,
+                defaultPlugin: 'example',
+                executor: [
+                    {
+                        name: 'k8s',
+                        exclusions: ['rhel6', 'ylinux6'],
+                        weightage: '20',
+                        options: k8sPluginOptions
+                    },
+                    {
+                        name: 'example',
+                        weightage: '0',
+                        options: examplePluginOptions
+                    },
+                    {
+                        name: 'k8s-vm',
+                        weightage: '2',
+                        options: k8sVmPluginOptions
+                    }
+                ]
+            });
+
+            k8sVmExecutorMock._start.resolves('k8sVmExecutorResult');
+            exampleExecutorMock._start.resolves('exampleExecutorResult');
+            k8sExecutorMock._start.resolves('k8sExecutorResult');
+
+            return executor
+                .start({
+                    buildId: 920,
+                    container: 'docker-registry.example.com:4443/sd/arya-rhel7:latest',
+                    apiUri: 'http://api.com',
+                    token: 'qwer'
+                })
+                .then(result => {
+                    assert.strictEqual(result, 'k8sExecutorResult');
+                    assert.calledOnce(k8sExecutorMock._start);
+                    assert.notCalled(exampleExecutorMock._start);
+                    assert.notCalled(k8sVmExecutorMock._start);
+                });
+        });
     });
 });
