@@ -56,7 +56,11 @@ class ExecutorRouter extends Executor {
             },
             {
                 name: 'weighted',
-                check: () => this.getWeightedExecutor(this._executors)
+                check: buildConfig => {
+                    const allowedExecutors = this.checkExclusions(this._executors, buildConfig.container);
+
+                    return this.getWeightedExecutor(allowedExecutors);
+                }
             },
             {
                 name: 'default',
@@ -91,6 +95,26 @@ class ExecutorRouter extends Executor {
         }
 
         return executors[0].name;
+    }
+
+    /**
+     * Checks if executor is excluded for a container.
+     * @method checkExclusions
+     * @param {Array} executors
+     * @param {String} container
+     */
+    checkExclusions(executors, container) {
+        return executors.filter(executor => {
+            const { exclusions } = executor;
+
+            if (!exclusions) return true;
+
+            return !exclusions.some(item => {
+                const regEx = new RegExp(item, 'gi');
+
+                return container.match(regEx);
+            });
+        });
     }
 
     /**
