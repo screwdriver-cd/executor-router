@@ -549,6 +549,41 @@ describe('index test', () => {
                 });
         });
 
+        it('calls _stop with default executor on executor selection errrors', () => {
+            executor = new Executor({
+                ecosystem,
+                defaultPlugin: 'example',
+                executor: [
+                    {
+                        name: 'k8s',
+                        weightage: 20,
+                        options: k8sPluginOptions,
+                        exclusions: ['rhel6']
+                    },
+                    {
+                        name: 'example',
+                        weightage: 0,
+                        options: examplePluginOptions
+                    },
+                    {
+                        name: 'k8s-vm',
+                        weightage: 10,
+                        options: k8sVmPluginOptions
+                    }
+                ]
+            });
+
+            return executor
+                .stop({
+                    buildId: 920
+                })
+                .then(() => {
+                    assert.called(exampleExecutorMock._stop);
+                    assert.notCalled(k8sVmExecutorMock._stop);
+                    assert.notCalled(k8sExecutorMock._stop);
+                });
+        });
+
         it('calls _start with executor from annotation', () => {
             k8sVmExecutorMock._start.resolves('k8sVmExecutorResult');
 

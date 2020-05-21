@@ -2,6 +2,7 @@
 
 const ANNOTATION_EXECUTOR_TYPE = 'executor'; // Key in annotations object that maps to an executor NPM module
 const Executor = require('screwdriver-executor-base');
+const logger = require('screwdriver-logger');
 
 class ExecutorRouter extends Executor {
     /**
@@ -33,7 +34,7 @@ class ExecutorRouter extends Executor {
                 ExecutorPlugin = require(`screwdriver-executor-${plugin.name}`);
                 this._executors.push(plugin);
             } catch (err) {
-                console.error(err.message);
+                logger.error(err.message);
 
                 return;
             }
@@ -133,9 +134,13 @@ class ExecutorRouter extends Executor {
         let executorName;
 
         for (const rule of this._executorRules) {
-            executorName = rule.check(config);
-            if (executorName && this[executorName]) {
-                break;
+            try {
+                executorName = rule.check(config);
+                if (executorName && this[executorName]) {
+                    break;
+                }
+            } catch (err) {
+                logger.error(`Failed to validate executor rule ${rule.name}`, err);
             }
         }
 
