@@ -549,7 +549,7 @@ describe('index test', () => {
                 });
         });
 
-        it('calls _stop with default executor on executor selection errrors', () => {
+        it('calls _stop with default executor on executor selection errors', () => {
             executor = new Executor({
                 ecosystem,
                 defaultPlugin: 'example',
