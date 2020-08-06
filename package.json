@@ -1,6 +1,6 @@
 {
   "name": "screwdriver-executor-router",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "A generic plugin for routing builds to specified executors",
   "main": "index.js",
   "scripts": {
@@ -41,6 +41,7 @@
     "sinon": "^4.5.0"
   },
   "dependencies": {
+    "screwdriver-data-schema": "git://github.com/screwdriver-cd/data-schema.git#hapi-v19",
     "screwdriver-executor-base": "^7.0.0",
     "screwdriver-logger": "^1.0.0"
   },
