@@ -30,8 +30,10 @@ class ExecutorRouter extends Executor {
 
         executor.forEach(plugin => {
             try {
+                const pluginName = plugin.pluginName || plugin.name;
+
                 // eslint-disable-next-line global-require, import/no-dynamic-require
-                ExecutorPlugin = require(`screwdriver-executor-${plugin.name}`);
+                ExecutorPlugin = require(`screwdriver-executor-${pluginName}`);
                 this._executors.push(plugin);
             } catch (err) {
                 logger.error(err.message);
