@@ -43,7 +43,7 @@
     "sinon": "^4.5.0"
   },
   "dependencies": {
-    "screwdriver-data-schema": "^20.0.0",
+    "screwdriver-data-schema": "^21.0.0",
     "screwdriver-executor-base": "^8.0.0",
     "screwdriver-logger": "^1.0.0"
   },
