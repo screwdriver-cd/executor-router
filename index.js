@@ -180,6 +180,24 @@ class ExecutorRouter extends Executor {
 
         return executor.stop(config);
     }
+
+    /**
+     * Verifies the status of a build in an executor
+     * @method _start
+     * @param  {Object} config               Configuration
+     * @param  {Object} [config.annotations] Optional key/value object
+     * @param  {String} config.apiUri        Screwdriver's API
+     * @param  {Object} [config.build]       Build object
+     * @param  {String} config.buildId       Unique ID for a build
+     * @param  {String} config.container     Container for the build to run in
+     * @param  {String} config.token         JWT to act on behalf of the build
+     * @return {Promise}
+     */
+    _verify(config) {
+        const executor = this.getExecutor(config);
+
+        return executor.verify(config);
+    }
 }
 
 module.exports = ExecutorRouter;
