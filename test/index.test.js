@@ -66,15 +66,18 @@ describe('index test', () => {
 
         k8sExecutorMock = {
             _start: sinon.stub(),
-            _stop: sinon.stub()
+            _stop: sinon.stub(),
+            _verify: sinon.stub()
         };
         exampleExecutorMock = {
             _start: sinon.stub(),
-            _stop: sinon.stub()
+            _stop: sinon.stub(),
+            _verify: sinon.stub()
         };
         k8sVmExecutorMock = {
             _start: sinon.stub(),
-            _stop: sinon.stub()
+            _stop: sinon.stub(),
+            _verify: sinon.stub()
         };
         mockery.registerMock('fs', fsMock);
         mockery.registerMock('screwdriver-executor-k8s', testExecutor(k8sExecutorMock));
@@ -494,6 +497,116 @@ describe('index test', () => {
                         'beta.screwdriver.cd/executor': 'k8s'
                     },
                     buildId: 920
+                })
+                .then(assert.fail, err => {
+                    assert.deepEqual(err, testError);
+                });
+        });
+    });
+
+    describe('_verify', () => {
+        it('default executor when no annotation is given', () => {
+            executor = new Executor({
+                defaultPlugin: 'example',
+                ecosystem,
+                executor: [
+                    {
+                        name: 'k8s',
+                        options: k8sPluginOptions
+                    },
+                    {
+                        name: 'example',
+                        options: examplePluginOptions
+                    }
+                ]
+            });
+            exampleExecutorMock._verify.resolves('exampleExecutorMockResult');
+
+            return executor
+                .verify({
+                    buildId: 920,
+                    container: 'node:4',
+                    apiUri: 'http://api.com',
+                    token: 'asdf'
+                })
+                .then(result => {
+                    assert.strictEqual(result, 'exampleExecutorMockResult');
+                });
+        });
+
+        it('default executor is the first one when given no executor annotation', () => {
+            k8sExecutorMock._verify.resolves('k8sExecutorResult');
+
+            return executor
+                .verify({
+                    buildId: 920,
+                    container: 'node:4',
+                    apiUri: 'http://api.com',
+                    token: 'asdf'
+                })
+                .then(result => {
+                    assert.strictEqual(result, 'k8sExecutorResult');
+                    assert.calledOnce(k8sExecutorMock._verify);
+                    assert.notCalled(exampleExecutorMock._verify);
+                });
+        });
+
+        it('default executor is the first one when given an invalid executor annotation', () => {
+            k8sExecutorMock._verify.resolves('k8sExecutorResult');
+            exampleExecutorMock._verify.rejects();
+
+            return executor
+                .verify({
+                    annotations: {
+                        'beta.screwdriver.cd/executor': 'darrenIsSometimesRight'
+                    },
+                    buildId: 920,
+                    container: 'node:4',
+                    apiUri: 'http://api.com',
+                    token: 'asdf'
+                })
+                .then(result => {
+                    assert.strictEqual(result, 'k8sExecutorResult');
+                    assert.calledOnce(k8sExecutorMock._verify);
+                    assert.notCalled(exampleExecutorMock._verify);
+                });
+        });
+
+        it('uses an annotation to determine which executor to call', () => {
+            k8sExecutorMock._verify.rejects();
+            exampleExecutorMock._verify.resolves('exampleExecutorResult');
+
+            return executor
+                .verify({
+                    annotations: {
+                        'beta.screwdriver.cd/executor': 'example'
+                    },
+                    buildId: 920,
+                    container: 'node:4',
+                    apiUri: 'http://api.com',
+                    token: 'asdf'
+                })
+                .then(result => {
+                    assert.strictEqual(result, 'exampleExecutorResult');
+                    assert.calledOnce(exampleExecutorMock._verify);
+                    assert.notCalled(k8sExecutorMock._verify);
+                });
+        });
+
+        it('propogates the failure from initiating a start', () => {
+            const testError = new Error('triggeredError');
+
+            k8sExecutorMock._verify.rejects(testError);
+
+            return executor
+                .verify({
+                    annotations: {
+                        'beta.screwdriver.cd/executor': 'k8s'
+                    },
+                    buildId: 920,
+                    container: 'node:4',
+                    apiUri: 'http://api.com',
+                    token: 'asdf'
                 })
                 .then(assert.fail, err => {
                     assert.deepEqual(err, testError);
