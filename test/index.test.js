@@ -92,6 +92,11 @@ describe('index test', () => {
                     options: k8sPluginOptions
                 },
                 {
+                    name: 'k8s-vm-sandbox',
+                    pluginName: 'k8s-vm',
+                    options: k8sVmPluginOptions
+                },
+                {
                     name: 'example',
                     options: examplePluginOptions
                 },
@@ -356,6 +361,27 @@ describe('index test', () => {
                     assert.strictEqual(result, 'exampleExecutorResult');
                     assert.calledOnce(exampleExecutorMock._start);
                     assert.notCalled(k8sExecutorMock._start);
+                });
+        });
+
+        it('uses proper executor when called with a different name', () => {
+            k8sExecutorMock._start.rejects();
+            k8sVmExecutorMock._start.resolves('k8sVmExecutorResult');
+
+            return executor
+                .start({
+                    annotations: {
+                        'screwdriver.cd/executor': 'k8s-vm-sandbox'
+                    },
+                    buildId: 920,
+                    container: 'node:12',
+                    apiUri: 'http://api.com',
+                    token: 'qwer'
+                })
+                .then(result => {
+                    assert.notCalled(k8sExecutorMock._start);
+                    assert.strictEqual(result, 'k8sVmExecutorResult');
+                    assert.calledOnce(k8sVmExecutorMock._start);
                 });
         });
 
