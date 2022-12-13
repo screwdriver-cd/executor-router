@@ -473,7 +473,7 @@ describe('index test', () => {
                 });
         });
 
-        it('uses an annotation to determine which executorn to call', () => {
+        it('uses an annotation to determine which executor to call', () => {
             k8sExecutorMock._stop.rejects();
             exampleExecutorMock._stop.resolves('exampleExecutorResult');
 
