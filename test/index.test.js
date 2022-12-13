@@ -410,6 +410,8 @@ describe('index test', () => {
     });
 
     describe('_stop', () => {
+        const apiUri = 'https://api.sd.cd';
+
         it('default executor when no annotation is given', () => {
             executor = new Executor({
                 defaultPlugin: 'example',
@@ -429,6 +431,7 @@ describe('index test', () => {
 
             return executor
                 .stop({
+                    apiUri,
                     buildId: 920
                 })
                 .then(result => {
@@ -441,6 +444,7 @@ describe('index test', () => {
 
             return executor
                 .stop({
+                    apiUri,
                     buildId: 920
                 })
                 .then(result => {
@@ -456,6 +460,7 @@ describe('index test', () => {
 
             return executor
                 .stop({
+                    apiUri,
                     annotations: {
                         'beta.screwdriver.cd/executor': 'darrenIsSometimesRight'
                     },
@@ -468,12 +473,13 @@ describe('index test', () => {
                 });
         });
 
-        it('uses an annotation to determine which executor to call', () => {
+        it('uses an annotation to determine which executorn to call', () => {
             k8sExecutorMock._stop.rejects();
             exampleExecutorMock._stop.resolves('exampleExecutorResult');
 
             return executor
                 .stop({
+                    apiUri,
                     annotations: {
                         'beta.screwdriver.cd/executor': 'example'
                     },
@@ -493,6 +499,7 @@ describe('index test', () => {
 
             return executor
                 .stop({
+                    apiUri,
                     annotations: {
                         'beta.screwdriver.cd/executor': 'k8s'
                     },
@@ -615,6 +622,8 @@ describe('index test', () => {
     });
 
     describe('Executor config with weightage', () => {
+        const apiUri = 'https://api.sd.cd';
+
         beforeEach(() => {
             executor = new Executor({
                 ecosystem,
@@ -671,6 +680,7 @@ describe('index test', () => {
 
             return executor
                 .stop({
+                    apiUri,
                     buildId: 920
                 })
                 .then(result => {
@@ -714,6 +724,7 @@ describe('index test', () => {
 
             return executor
                 .stop({
+                    apiUri,
                     buildId: 920
                 })
                 .then(() => {
@@ -770,6 +781,7 @@ describe('index test', () => {
 
             return executor
                 ._stop({
+                    apiUri,
                     buildId: 920
                 })
                 .then(result => {
@@ -787,6 +799,7 @@ describe('index test', () => {
 
             return executor
                 .stop({
+                    apiUri,
                     annotations: {
                         'beta.screwdriver.cd/executor': 'k8s-vm'
                     },
@@ -823,6 +836,7 @@ describe('index test', () => {
 
             return executor
                 ._stop({
+                    apiUri,
                     buildId: 920
                 })
                 .then(result => {
