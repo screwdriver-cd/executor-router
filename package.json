@@ -1,6 +1,6 @@
 {
   "name": "screwdriver-executor-router",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "A generic plugin for routing builds to specified executors",
   "main": "index.js",
   "scripts": {
@@ -42,8 +42,8 @@
     "sinon": "^15.0.0"
   },
   "dependencies": {
-    "screwdriver-data-schema": "^23.0.4",
-    "screwdriver-executor-base": "^9.0.0",
+    "screwdriver-data-schema": "^24.0.0",
+    "screwdriver-executor-base": "^10.0.0",
     "screwdriver-logger": "^2.0.0"
   },
   "release": {
