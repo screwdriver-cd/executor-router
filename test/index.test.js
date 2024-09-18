@@ -16,7 +16,7 @@ describe('index test', () => {
     let fsMock;
     let k8sExecutorMock;
     let exampleExecutorMock;
-    let k8sVmExecutorMock;
+    let testExecutorMock;
     const ecosystem = {
         api: 'http://api.com',
         store: 'http://store.com'
@@ -40,14 +40,14 @@ describe('index test', () => {
         prefix: 'EXECUTOR_PREFIX'
     };
 
-    const k8sVmPluginOptions = {
+    const testPluginOptions = {
         kubernetes: {
-            host: 'K8SVM_HOST',
-            token: 'K8SVM_TOKEN',
-            jobsNamespace: 'K8SVM_JOBS_NAMESPACE'
+            host: 'testhost',
+            token: 'testtoken',
+            jobsNamespace: 'testnamespace'
         },
-        launchVersion: 'LAUNCH_VERSION',
-        prefix: 'EXECUTOR_PREFIX'
+        launchVersion: 'testversion',
+        prefix: 'testprefix'
     };
 
     before(() => {
@@ -74,7 +74,7 @@ describe('index test', () => {
             _stop: sinon.stub(),
             _verify: sinon.stub()
         };
-        k8sVmExecutorMock = {
+        testExecutorMock = {
             _start: sinon.stub(),
             _stop: sinon.stub(),
             _verify: sinon.stub()
@@ -82,7 +82,7 @@ describe('index test', () => {
         mockery.registerMock('fs', fsMock);
         mockery.registerMock('screwdriver-executor-k8s', testExecutor(k8sExecutorMock));
         mockery.registerMock('screwdriver-executor-example', testExecutor(exampleExecutorMock));
-        mockery.registerMock('screwdriver-executor-k8s-vm', testExecutor(k8sVmExecutorMock));
+        mockery.registerMock('screwdriver-executor-test', testExecutor(testExecutorMock));
 
         // eslint-disable-next-line global-require
         Executor = require('../index');
@@ -95,17 +95,17 @@ describe('index test', () => {
                     options: k8sPluginOptions
                 },
                 {
-                    name: 'k8s-vm-sandbox',
-                    pluginName: 'k8s-vm',
-                    options: k8sVmPluginOptions
+                    name: 'test-sandbox',
+                    pluginName: 'test',
+                    options: testPluginOptions
                 },
                 {
                     name: 'example',
                     options: examplePluginOptions
                 },
                 {
-                    name: 'k8s-vm',
-                    options: k8sVmPluginOptions
+                    name: 'test',
+                    options: testPluginOptions
                 }
             ]
         });
@@ -369,12 +369,12 @@ describe('index test', () => {
 
         it('uses proper executor when called with a different name', () => {
             k8sExecutorMock._start.rejects();
-            k8sVmExecutorMock._start.resolves('k8sVmExecutorResult');
+            testExecutorMock._start.resolves('testExecutorResult');
 
             return executor
                 .start({
                     annotations: {
-                        'screwdriver.cd/executor': 'k8s-vm-sandbox'
+                        'screwdriver.cd/executor': 'test-sandbox'
                     },
                     buildId: 920,
                     container: 'node:12',
@@ -383,8 +383,8 @@ describe('index test', () => {
                 })
                 .then(result => {
                     assert.notCalled(k8sExecutorMock._start);
-                    assert.strictEqual(result, 'k8sVmExecutorResult');
-                    assert.calledOnce(k8sVmExecutorMock._start);
+                    assert.strictEqual(result, 'testExecutorResult');
+                    assert.calledOnce(testExecutorMock._start);
                 });
         });
 
@@ -640,9 +640,9 @@ describe('index test', () => {
                         options: examplePluginOptions
                     },
                     {
-                        name: 'k8s-vm',
+                        name: 'test',
                         weightage: 10,
-                        options: k8sVmPluginOptions
+                        options: testPluginOptions
                     }
                 ]
             });
@@ -650,7 +650,7 @@ describe('index test', () => {
 
         it('calls _start with randomly weighted executor and not default when no annotation', () => {
             k8sExecutorMock._start.resolves('k8sExecutorResult');
-            k8sVmExecutorMock._start.resolves('k8sVmExecutorResult');
+            testExecutorMock._start.resolves('testExecutorResult');
 
             return executor
                 .start({
@@ -664,10 +664,10 @@ describe('index test', () => {
                         assert.strictEqual(result, 'k8sExecutorResult');
                         assert.calledOnce(k8sExecutorMock._start);
                         assert.notCalled(exampleExecutorMock._start);
-                        assert.notCalled(k8sVmExecutorMock._start);
+                        assert.notCalled(testExecutorMock._start);
                     } else {
-                        assert.strictEqual(result, 'k8sVmExecutorResult');
-                        assert.calledOnce(k8sVmExecutorMock._start);
+                        assert.strictEqual(result, 'testExecutorResult');
+                        assert.calledOnce(testExecutorMock._start);
                         assert.notCalled(exampleExecutorMock._start);
                         assert.notCalled(k8sExecutorMock._start);
                     }
@@ -676,7 +676,7 @@ describe('index test', () => {
 
         it('calls _stop with randomly weighted executor and not default when no annotation', () => {
             k8sExecutorMock._stop.resolves('k8sExecutorResult');
-            k8sVmExecutorMock._stop.resolves('k8sVmExecutorResult');
+            testExecutorMock._stop.resolves('testExecutorResult');
 
             return executor
                 .stop({
@@ -688,10 +688,10 @@ describe('index test', () => {
                         assert.strictEqual(result, 'k8sExecutorResult');
                         assert.calledOnce(k8sExecutorMock._stop);
                         assert.notCalled(exampleExecutorMock._stop);
-                        assert.notCalled(k8sVmExecutorMock._stop);
+                        assert.notCalled(testExecutorMock._stop);
                     } else {
-                        assert.strictEqual(result, 'k8sVmExecutorResult');
-                        assert.calledOnce(k8sVmExecutorMock._stop);
+                        assert.strictEqual(result, 'testExecutorResult');
+                        assert.calledOnce(testExecutorMock._stop);
                         assert.notCalled(exampleExecutorMock._stop);
                         assert.notCalled(k8sExecutorMock._stop);
                     }
@@ -715,9 +715,9 @@ describe('index test', () => {
                         options: examplePluginOptions
                     },
                     {
-                        name: 'k8s-vm',
+                        name: 'test',
                         weightage: 10,
-                        options: k8sVmPluginOptions
+                        options: testPluginOptions
                     }
                 ]
             });
@@ -729,27 +729,27 @@ describe('index test', () => {
                 })
                 .then(() => {
                     assert.called(exampleExecutorMock._stop);
-                    assert.notCalled(k8sVmExecutorMock._stop);
+                    assert.notCalled(testExecutorMock._stop);
                     assert.notCalled(k8sExecutorMock._stop);
                 });
         });
 
         it('calls _start with executor from annotation', () => {
-            k8sVmExecutorMock._start.resolves('k8sVmExecutorResult');
+            testExecutorMock._start.resolves('testExecutorResult');
 
             return executor
                 .start({
                     buildId: 920,
                     annotations: {
-                        'beta.screwdriver.cd/executor': 'k8s-vm'
+                        'beta.screwdriver.cd/executor': 'test'
                     },
                     container: 'node:4',
                     apiUri: 'http://api.com',
                     token: 'qwer'
                 })
                 .then(result => {
-                    assert.strictEqual(result, 'k8sVmExecutorResult');
-                    assert.calledOnce(k8sVmExecutorMock._start);
+                    assert.strictEqual(result, 'testExecutorResult');
+                    assert.calledOnce(testExecutorMock._start);
                     assert.notCalled(exampleExecutorMock._start);
                     assert.notCalled(k8sExecutorMock._start);
                 });
@@ -771,9 +771,9 @@ describe('index test', () => {
                         options: examplePluginOptions
                     },
                     {
-                        name: 'k8s-vm',
+                        name: 'test',
                         weightage: 0,
-                        options: k8sVmPluginOptions
+                        options: testPluginOptions
                     }
                 ]
             });
@@ -787,7 +787,7 @@ describe('index test', () => {
                 .then(result => {
                     assert.strictEqual(result, 'exampleExecutorResult');
                     assert.calledOnce(exampleExecutorMock._stop);
-                    assert.notCalled(k8sVmExecutorMock._stop);
+                    assert.notCalled(testExecutorMock._stop);
                     assert.notCalled(k8sExecutorMock._stop);
                 });
         });
@@ -795,13 +795,13 @@ describe('index test', () => {
         it('propogates the failure from initiating a start when config has weightage', () => {
             const testError = new Error('triggeredError');
 
-            k8sVmExecutorMock._stop.rejects(testError);
+            testExecutorMock._stop.rejects(testError);
 
             return executor
                 .stop({
                     apiUri,
                     annotations: {
-                        'beta.screwdriver.cd/executor': 'k8s-vm'
+                        'beta.screwdriver.cd/executor': 'test'
                     },
                     buildId: 920
                 })
@@ -826,13 +826,13 @@ describe('index test', () => {
                         options: examplePluginOptions
                     },
                     {
-                        name: 'k8s-vm',
+                        name: 'test',
                         weightage: '5',
-                        options: k8sVmPluginOptions
+                        options: testPluginOptions
                     }
                 ]
             });
-            k8sVmExecutorMock._stop.resolves('k8sVmExecutorResult');
+            testExecutorMock._stop.resolves('testExecutorResult');
 
             return executor
                 ._stop({
@@ -840,8 +840,8 @@ describe('index test', () => {
                     buildId: 920
                 })
                 .then(result => {
-                    assert.strictEqual(result, 'k8sVmExecutorResult');
-                    assert.calledOnce(k8sVmExecutorMock._stop);
+                    assert.strictEqual(result, 'testExecutorResult');
+                    assert.calledOnce(testExecutorMock._stop);
                     assert.notCalled(exampleExecutorMock._stop);
                     assert.notCalled(k8sExecutorMock._stop);
                 });
@@ -864,14 +864,14 @@ describe('index test', () => {
                         options: examplePluginOptions
                     },
                     {
-                        name: 'k8s-vm',
+                        name: 'test',
                         weightage: '2',
-                        options: k8sVmPluginOptions
+                        options: testPluginOptions
                     }
                 ]
             });
 
-            k8sVmExecutorMock._start.resolves('k8sVmExecutorResult');
+            testExecutorMock._start.resolves('testExecutorResult');
             exampleExecutorMock._start.resolves('exampleExecutorResult');
             k8sExecutorMock._start.resolves('k8sExecutorResult');
 
@@ -883,8 +883,8 @@ describe('index test', () => {
                     token: 'qwer'
                 })
                 .then(result => {
-                    assert.strictEqual(result, 'k8sVmExecutorResult');
-                    assert.calledOnce(k8sVmExecutorMock._start);
+                    assert.strictEqual(result, 'testExecutorResult');
+                    assert.calledOnce(testExecutorMock._start);
                     assert.notCalled(exampleExecutorMock._start);
                     assert.notCalled(k8sExecutorMock._start);
                 });
@@ -907,14 +907,14 @@ describe('index test', () => {
                         options: examplePluginOptions
                     },
                     {
-                        name: 'k8s-vm',
+                        name: 'test',
                         weightage: '2',
-                        options: k8sVmPluginOptions
+                        options: testPluginOptions
                     }
                 ]
             });
 
-            k8sVmExecutorMock._start.resolves('k8sVmExecutorResult');
+            testExecutorMock._start.resolves('testExecutorResult');
             exampleExecutorMock._start.resolves('exampleExecutorResult');
             k8sExecutorMock._start.resolves('k8sExecutorResult');
 
@@ -929,7 +929,7 @@ describe('index test', () => {
                     assert.strictEqual(result, 'k8sExecutorResult');
                     assert.calledOnce(k8sExecutorMock._start);
                     assert.notCalled(exampleExecutorMock._start);
-                    assert.notCalled(k8sVmExecutorMock._start);
+                    assert.notCalled(testExecutorMock._start);
                 });
         });
     });
