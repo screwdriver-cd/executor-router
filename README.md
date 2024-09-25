@@ -33,11 +33,10 @@ executor:
       options:
         docker: {}
         launchVersion: stable
-    k8s-vm:
+    jenkins:
       options:
-        kubernetes:
-            host: kubernetes.default
-            token: sometokenhere
+        host: jenkins.default
+        port: 8080
         launchVersion: stable
 ```
 
